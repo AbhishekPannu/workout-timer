@@ -610,13 +610,13 @@ function onDone() {
   flashScreen();
   rounds++;
   roundNum.textContent = rounds;
-  mainBtn.textContent = 'START';
-  releaseWakeLock();
-  // auto-prepare for next set
+  mainBtn.textContent = 'PAUSE';
+  // auto-restart after a brief pause so the done sound plays out
   setTimeout(() => {
     remainSecs = totalSecs;
     warnFired  = false;
     updateDisplay();
+    start();
   }, 1800);
 }
 
