@@ -386,14 +386,13 @@ function beep(freq, dur, type = 'square', vol = 0.5, delay = 0) {
 }
 
 function playWarn() {
-  beep(600, 0.12, 'square', 0.3, 0);
-  beep(600, 0.12, 'square', 0.3, 0.2);
+  beep(600, 0.12, 'square', 0.5, 0);
 }
 
 function playDone() {
   beep(600, 0.15, 'square', 0.55, 0.0);
   beep(600,  0.15, 'square', 0.55, 0.18);
-  beep(600, 0.35, 'square', 0.6,  0.36);
+  beep(600, 0.35, 'square', 0.7,  0.36);
 }
 
 function resumeAudio() {
