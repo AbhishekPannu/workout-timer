@@ -15,7 +15,7 @@
     --warn: #ff6b00;
     --text: #f0f0f0;
     --muted: #888;
-    --ring-size: min(70vw, 340px);
+    --ring-size: min(52vw, 260px);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -98,13 +98,58 @@
     background: rgba(200,255,0,0.06);
   }
 
+  /* ── RING ROW ── */
+  .ring-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 28px 12px 0;
+    width: 100%;
+    max-width: 500px;
+    z-index: 1;
+    position: relative;
+  }
+
+  .side-btn {
+    flex: 1;
+    max-width: 72px;
+    height: var(--ring-size);
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    color: #ccc;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .side-btn:active {
+    background: var(--border);
+    transform: scale(0.96);
+  }
+
+  .side-btn span {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.12em;
+    color: #777;
+    text-transform: uppercase;
+  }
+
   /* ── RING ── */
   .ring-wrap {
     position: relative;
     width: var(--ring-size);
     height: var(--ring-size);
-    margin: 32px auto 0;
-    z-index: 1;
+    flex-shrink: 0;
   }
 
   .ring-svg {
@@ -157,43 +202,13 @@
     margin-top: 4px;
   }
 
-  /* ── ADJUST ── */
-  .adjust-row {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-top: 22px;
-    z-index: 1;
-    position: relative;
-  }
 
-  .adj-btn {
-    width: 44px; height: 44px;
-    border-radius: 50%;
-    border: 1.5px solid var(--border);
-    background: var(--surface);
-    color: #ccc;
-    font-size: 1.2rem;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.15s;
-    font-family: 'DM Mono', monospace;
-  }
-
-  .adj-btn:active { transform: scale(0.9); background: var(--border); }
-
-  .adj-label {
-    font-size: 0.65rem;
-    letter-spacing: 0.2em;
-    color: #aaa;
-    text-transform: uppercase;
-  }
 
   /* ── CONTROLS ── */
   .controls {
     display: flex;
     gap: 14px;
-    margin-top: 26px;
+    margin-top: 22px;
     z-index: 1;
     position: relative;
   }
@@ -229,35 +244,6 @@
 
   .btn-reset:hover { border-color: #aaa; color: var(--text); }
   .btn-reset:active { transform: scale(0.96); }
-
-  /* ── STATUS BAR ── */
-  .status-bar {
-    margin-top: 28px;
-    margin-bottom: 28px;
-    display: flex;
-    gap: 20px;
-    z-index: 1;
-    position: relative;
-  }
-
-  .status-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.6rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: #aaa;
-  }
-
-  .status-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: #666;
-    transition: background 0.3s;
-  }
-
-  .status-dot.on { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
 
   /* ── PULSE ANIM ── */
   @keyframes pulse-ring {
@@ -328,27 +314,30 @@
   <button class="preset-btn" onclick="setPreset(240, this)">4:00<br><span style="font-size:0.55rem;font-family:'DM Mono';letter-spacing:0.1em;color:inherit">HEAVY LIFT</span></button>
 </div>
 
-<!-- RING -->
-<div class="ring-wrap" id="ringWrap">
-  <svg class="ring-svg" viewBox="0 0 120 120" id="ringSvg">
-    <circle class="ring-bg" cx="60" cy="60" r="54"/>
-    <circle class="ring-progress" cx="60" cy="60" r="54" id="ringProgress"
-      stroke-dasharray="339.29"
-      stroke-dashoffset="0"/>
-  </svg>
-  <div class="ring-center">
-    <div class="time-display" id="timeDisplay">2:00</div>
-    <div class="time-label">remaining</div>
-    <div class="warn-label">15 sec remaining</div>
-    <div class="round-counter">SET <span id="roundNum">1</span></div>
-  </div>
-</div>
+<!-- RING ROW -->
+<div class="ring-row">
+  <button class="side-btn" onclick="adjustTime(-30)">
+    <span>−30s</span>
+  </button>
 
-<!-- ADJUST -->
-<div class="adjust-row">
-  <button class="adj-btn" onclick="adjustTime(-30)">−30</button>
-  <span class="adj-label">adjust</span>
-  <button class="adj-btn" onclick="adjustTime(30)">+30</button>
+  <div class="ring-wrap" id="ringWrap">
+    <svg class="ring-svg" viewBox="0 0 120 120" id="ringSvg">
+      <circle class="ring-bg" cx="60" cy="60" r="54"/>
+      <circle class="ring-progress" cx="60" cy="60" r="54" id="ringProgress"
+        stroke-dasharray="339.29"
+        stroke-dashoffset="0"/>
+    </svg>
+    <div class="ring-center">
+      <div class="time-display" id="timeDisplay">2:00</div>
+      <div class="time-label">remaining</div>
+      <div class="warn-label">15 sec remaining</div>
+      <div class="round-counter">SET <span id="roundNum">1</span></div>
+    </div>
+  </div>
+
+  <button class="side-btn" onclick="adjustTime(30)">
+    <span>+30s</span>
+  </button>
 </div>
 
 <!-- MAIN CONTROLS -->
@@ -357,21 +346,7 @@
   <button class="btn-reset" onclick="resetTimer()">RESET</button>
 </div>
 
-<!-- STATUS -->
-<div class="status-bar">
-  <div class="status-item">
-    <div class="status-dot on" id="dotWarn"></div>
-    <span>15s warn</span>
-  </div>
-  <div class="status-item">
-    <div class="status-dot" id="dotVibe"></div>
-    <span>vibration</span>
-  </div>
-  <div class="status-item">
-    <div class="status-dot" id="dotWake"></div>
-    <span>screen on</span>
-  </div>
-</div>
+
 
 <script>
 // ── STATE ──
@@ -390,11 +365,8 @@ const prog     = document.getElementById('ringProgress');
 const disp     = document.getElementById('timeDisplay');
 const mainBtn  = document.getElementById('mainBtn');
 const flashEl  = document.getElementById('flashOverlay');
-const dotVibe  = document.getElementById('dotVibe');
-const dotWake  = document.getElementById('dotWake');
 const roundNum = document.getElementById('roundNum');
 
-if (navigator.vibrate) dotVibe.classList.add('on');
 
 // ── AUDIO ──
 const actx = new (window.AudioContext || window.webkitAudioContext)();
@@ -414,30 +386,12 @@ function beep(freq, dur, type = 'square', vol = 0.5, delay = 0) {
 }
 
 function playWarn() {
-  beep(1050, 0.12, 'square', 0.3, 0);
-  beep(1050, 0.12, 'square', 0.3, 0.2);
+  beep(600, 0.12, 'triangle', 0.8, 0);
+  beep(600, 0.12, 'triangle', 0.8, 0.2);
 }
 
 function playDone() {
-  beep(1200, 0.15, 'square', 0.55, 0.0);
-  beep(900,  0.15, 'square', 0.55, 0.18);
-  beep(1200, 0.15, 'square', 0.55, 0.36);
-  beep(900,  0.15, 'square', 0.55, 0.54);
-  beep(1400, 0.35, 'square', 0.6,  0.72);
-  setTimeout(speakGo, 1200);
-}
-
-function speakGo() {
-  if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const utt = new SpeechSynthesisUtterance("Let's start Aditi!");
-  utt.rate   = 1.05;
-  utt.pitch  = 1.2;
-  utt.volume = 1;
-  const voices = window.speechSynthesis.getVoices();
-  const pick = voices.find(v => /en[-_]?(US|GB|AU)/i.test(v.lang)) || voices.find(v => /en/i.test(v.lang));
-  if (pick) utt.voice = pick;
-  window.speechSynthesis.speak(utt);
+  beep(600, 4.5, 'triangle', 0.8, 0);
 }
 
 function resumeAudio() {
@@ -559,13 +513,11 @@ async function acquireWakeLock() {
   if (!('wakeLock' in navigator)) return;
   try {
     wakeLock = await navigator.wakeLock.request('screen');
-    dotWake.classList.add('on');
-    wakeLock.addEventListener('release', () => dotWake.classList.remove('on'));
-  } catch(e) {}
+      } catch(e) {}
 }
 
 function releaseWakeLock() {
-  if (wakeLock) { wakeLock.release(); wakeLock = null; dotWake.classList.remove('on'); }
+  if (wakeLock) { wakeLock.release(); wakeLock = null; }
 }
 
 document.addEventListener('visibilitychange', () => {
