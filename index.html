@@ -393,23 +393,7 @@ function playWarn() {
 function playDone() {
   beep(600, 0.15, 'square', 0.55, 0.0);
   beep(600,  0.15, 'square', 0.55, 0.18);
-  beep(600, 0.15, 'square', 0.55, 0.36);
-  beep(600,  0.15, 'square', 0.55, 0.54);
-  beep(600, 0.35, 'square', 0.6,  0.72);
-  setTimeout(speakGo, 1200);
-}
-
-function speakGo() {
-  if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const utt = new SpeechSynthesisUtterance("Let's gooooo!");
-  utt.rate   = 1.05;
-  utt.pitch  = 1.2;
-  utt.volume = 1;
-  const voices = window.speechSynthesis.getVoices();
-  const pick = voices.find(v => /en[-_]?(US|GB|AU)/i.test(v.lang)) || voices.find(v => /en/i.test(v.lang));
-  if (pick) utt.voice = pick;
-  window.speechSynthesis.speak(utt);
+  beep(600, 0.35, 'square', 0.6,  0.36);
 }
 
 function resumeAudio() {
@@ -542,9 +526,7 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && running) acquireWakeLock();
 });
 
-// Preload voices
-window.speechSynthesis.getVoices();
-window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+
 
 document.addEventListener('keydown', e => {
   if (e.code === 'Space') { e.preventDefault(); toggleTimer(); }
