@@ -9,12 +9,12 @@
   :root {
     --bg: #0a0a0a;
     --surface: #111111;
-    --border: #2a2a2a;
+    --border: #3a3a3a;
     --accent: #c8ff00;
     --accent-dim: #8aad00;
     --warn: #ff6b00;
     --text: #f0f0f0;
-    --muted: #888;
+    --muted: #bbb;
     --ring-size: min(52vw, 260px);
   }
 
@@ -81,8 +81,8 @@
 
   .preset-btn {
     background: var(--surface);
-    border: 1.5px solid var(--border);
-    color: #aaa;
+    border: 1.5px solid #3a3a3a;
+    color: #ccc;
     font-family: 'Bebas Neue', sans-serif;
     font-size: 1.05rem;
     letter-spacing: 0.1em;
@@ -116,7 +116,7 @@
     max-width: 72px;
     height: var(--ring-size);
     background: var(--surface);
-    border: 1.5px solid var(--border);
+    border: 1.5px solid #3a3a3a;
     border-radius: 14px;
     color: #ccc;
     font-family: 'Bebas Neue', sans-serif;
@@ -140,7 +140,7 @@
     font-family: 'DM Mono', monospace;
     font-size: 0.55rem;
     letter-spacing: 0.12em;
-    color: #777;
+    color: #999;
     text-transform: uppercase;
   }
 
@@ -197,7 +197,7 @@
   .time-label {
     font-size: 0.6rem;
     letter-spacing: 0.25em;
-    color: #aaa;
+    color: #ccc;
     text-transform: uppercase;
     margin-top: 4px;
   }
@@ -231,8 +231,8 @@
 
   .btn-reset {
     background: transparent;
-    color: #aaa;
-    border: 1.5px solid var(--border);
+    color: #ccc;
+    border: 1.5px solid #3a3a3a;
     font-family: 'Bebas Neue', sans-serif;
     font-size: 1.4rem;
     letter-spacing: 0.15em;
@@ -242,7 +242,7 @@
     transition: all 0.15s;
   }
 
-  .btn-reset:hover { border-color: #aaa; color: var(--text); }
+  .btn-reset:hover { border-color: #ccc; color: var(--text); }
   .btn-reset:active { transform: scale(0.96); }
 
   /* ── PULSE ANIM ── */
@@ -274,7 +274,7 @@
   .round-counter {
     font-size: 0.6rem;
     letter-spacing: 0.25em;
-    color: #aaa;
+    color: #ccc;
     text-transform: uppercase;
     margin-top: 2px;
   }
@@ -392,10 +392,25 @@ function playWarn() {
 
 function playDone() {
   beep(600, 0.15, 'square', 0.55, 0.0);
-  beep(600, 0.15, 'square', 0.6,  0.20);
-  beep(600, 1.5, 'square', 0.8,  0.40);
+  beep(600,  0.15, 'square', 0.55, 0.18);
+  beep(600, 0.15, 'square', 0.55, 0.36);
+  beep(600,  0.15, 'square', 0.55, 0.54);
+  beep(600, 0.35, 'square', 0.6,  0.72);
+  setTimeout(speakGo, 1200);
 }
 
+function speakGo() {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance("Let's gooooo!");
+  utt.rate   = 1.05;
+  utt.pitch  = 1.2;
+  utt.volume = 1;
+  const voices = window.speechSynthesis.getVoices();
+  const pick = voices.find(v => /en[-_]?(US|GB|AU)/i.test(v.lang)) || voices.find(v => /en/i.test(v.lang));
+  if (pick) utt.voice = pick;
+  window.speechSynthesis.speak(utt);
+}
 
 function resumeAudio() {
   if (actx.state === 'suspended') actx.resume();
