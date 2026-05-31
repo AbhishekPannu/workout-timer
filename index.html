@@ -475,16 +475,18 @@ function beep(freq, dur, type = 'sine', vol = 0.5, delay = 0) {
 }
 
 function playWarn() {
-  // two soft mid tones
-  beep(660, 0.18, 'sine', 0.35, 0);
-  beep(660, 0.18, 'sine', 0.35, 0.28);
+  // sharp double beep warning
+  beep(1050, 0.12, 'square', 0.3, 0);
+  beep(1050, 0.12, 'square', 0.3, 0.2);
 }
 
 function playDone() {
-  // triumphant three-tone chime
-  beep(523, 0.22, 'sine', 0.5, 0);
-  beep(659, 0.22, 'sine', 0.5, 0.22);
-  beep(784, 0.45, 'sine', 0.55, 0.44);
+  // urgent alarm — rapid alternating blasts
+  beep(1200, 0.15, 'square', 0.55, 0.0);
+  beep(900,  0.15, 'square', 0.55, 0.18);
+  beep(1200, 0.15, 'square', 0.55, 0.36);
+  beep(900,  0.15, 'square', 0.55, 0.54);
+  beep(1400, 0.35, 'square', 0.6,  0.72);
 }
 
 function resumeAudio() {
