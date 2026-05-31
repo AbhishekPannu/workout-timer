@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REST TIMER</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --border: #1e1e1e;
+    --accent: #c8ff00;
+    --accent-dim: #8aad00;
+    --warn: #ff6b00;
+    --text: #f0f0f0;
+    --muted: #444;
+    --ring-size: min(70vw, 340px);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+    user-select: none;
+  }
+
+  /* noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
+
+  header {
+    width: 100%;
+    padding: 24px 28px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    position: relative;
+    z-index: 1;
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .tagline {
+    font-size: 0.62rem;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  /* ── PRESETS ── */
+  .presets {
+    display: flex;
+    gap: 10px;
+    margin: 28px 0 0;
+    flex-wrap: wrap;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+    padding: 0 20px;
+  }
+
+  .preset-btn {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    color: var(--muted);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.05rem;
+    letter-spacing: 0.1em;
+    padding: 8px 18px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .preset-btn:hover, .preset-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(200,255,0,0.06);
+  }
+
+  /* ── RING ── */
+  .ring-wrap {
+    position: relative;
+    width: var(--ring-size);
+    height: var(--ring-size);
+    margin: 32px auto 0;
+    z-index: 1;
+  }
+
+  .ring-svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+
+  .ring-bg {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 6;
+  }
+
+  .ring-progress {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 6;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.9s linear, stroke 0.3s;
+  }
+
+  .ring-warn .ring-progress { stroke: var(--warn); }
+
+  .ring-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .time-display {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(4.5rem, 18vw, 7rem);
+    line-height: 1;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    transition: color 0.3s;
+  }
+
+  .ring-warn .time-display { color: var(--warn); }
+
+  .time-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.25em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* ── ADJUST ── */
+  .adjust-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 22px;
+    z-index: 1;
+    position: relative;
+  }
+
+  .adj-btn {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .adj-btn:active { transform: scale(0.9); background: var(--border); }
+
+  .adj-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  /* ── CONTROLS ── */
+  .controls {
+    display: flex;
+    gap: 14px;
+    margin-top: 26px;
+    z-index: 1;
+    position: relative;
+  }
+
+  .btn-main {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.15em;
+    padding: 14px 48px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-main:hover { background: #d8ff30; }
+  .btn-main:active { transform: scale(0.96); }
+
+  .btn-reset {
+    background: transparent;
+    color: var(--muted);
+    border: 1.5px solid var(--border);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.15em;
+    padding: 14px 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-reset:hover { border-color: var(--muted); color: var(--text); }
+  .btn-reset:active { transform: scale(0.96); }
+
+  /* ── CUSTOM INPUT ── */
+  .custom-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+    z-index: 1;
+    position: relative;
+  }
+
+  .custom-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .custom-input {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+    border-radius: 4px;
+    width: 64px;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .custom-input:focus { border-color: var(--accent); }
+
+  .custom-set {
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--muted);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .custom-set:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── STATUS BAR ── */
+  .status-bar {
+    margin-top: 28px;
+    margin-bottom: 28px;
+    display: flex;
+    gap: 20px;
+    z-index: 1;
+    position: relative;
+  }
+
+  .status-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--muted);
+    transition: background 0.3s;
+  }
+
+  .status-dot.on { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+
+  /* ── PULSE ANIM ── */
+  @keyframes pulse-ring {
+    0%   { box-shadow: 0 0 0 0 rgba(200,255,0,0.35); }
+    70%  { box-shadow: 0 0 0 18px rgba(200,255,0,0); }
+    100% { box-shadow: 0 0 0 0 rgba(200,255,0,0); }
+  }
+
+  @keyframes pulse-ring-warn {
+    0%   { box-shadow: 0 0 0 0 rgba(255,107,0,0.45); }
+    70%  { box-shadow: 0 0 0 18px rgba(255,107,0,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,107,0,0); }
+  }
+
+  .ring-wrap.done-flash .ring-center {
+    animation: pulse-ring 0.6s ease-out;
+  }
+
+  /* screen flash on done */
+  .flash-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--accent);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 999;
+    transition: opacity 0.05s;
+  }
+
+  .flash-overlay.flash { animation: flash-anim 0.4s ease-out forwards; }
+
+  @keyframes flash-anim {
+    0%   { opacity: 0.18; }
+    100% { opacity: 0; }
+  }
+
+  /* ── DONE STATE ── */
+  .time-display.done { color: var(--accent); }
+
+  /* round counter */
+  .round-counter {
+    font-size: 0.6rem;
+    letter-spacing: 0.25em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .round-counter span {
+    color: var(--accent);
+    font-size: 0.8rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="flash-overlay" id="flashOverlay"></div>
+
+<header>
+  <div class="logo">REST</div>
+  <div class="tagline">workout timer</div>
+</header>
+
+<!-- PRESETS -->
+<div class="presets">
+  <button class="preset-btn" onclick="setPreset(90)">1:30<br><span style="font-size:0.55rem;font-family:'DM Mono';letter-spacing:0.1em;color:inherit">CARDIO</span></button>
+  <button class="preset-btn active" onclick="setPreset(120)">2:00<br><span style="font-size:0.55rem;font-family:'DM Mono';letter-spacing:0.1em;color:inherit">HYPERTROPHY</span></button>
+  <button class="preset-btn" onclick="setPreset(180)">3:00<br><span style="font-size:0.55rem;font-family:'DM Mono';letter-spacing:0.1em;color:inherit">STRENGTH</span></button>
+  <button class="preset-btn" onclick="setPreset(240)">4:00<br><span style="font-size:0.55rem;font-family:'DM Mono';letter-spacing:0.1em;color:inherit">HEAVY LIFT</span></button>
+</div>
+
+<!-- RING -->
+<div class="ring-wrap" id="ringWrap">
+  <svg class="ring-svg" viewBox="0 0 120 120" id="ringSvg">
+    <circle class="ring-bg" cx="60" cy="60" r="54"/>
+    <circle class="ring-progress" cx="60" cy="60" r="54" id="ringProgress"
+      stroke-dasharray="339.29"
+      stroke-dashoffset="0"/>
+  </svg>
+  <div class="ring-center">
+    <div class="time-display" id="timeDisplay">2:00</div>
+    <div class="time-label">remaining</div>
+    <div class="round-counter">SET <span id="roundNum">1</span></div>
+  </div>
+</div>
+
+<!-- ADJUST -->
+<div class="adjust-row">
+  <button class="adj-btn" onclick="adjustTime(-30)" title="-30s">−30</button>
+  <span class="adj-label">adjust</span>
+  <button class="adj-btn" onclick="adjustTime(30)" title="+30s">+30</button>
+</div>
+
+<!-- MAIN CONTROLS -->
+<div class="controls">
+  <button class="btn-main" id="mainBtn" onclick="toggleTimer()">START</button>
+  <button class="btn-reset" onclick="resetTimer()">RESET</button>
+</div>
+
+<!-- CUSTOM TIME -->
+<div class="custom-row">
+  <span class="custom-label">Custom</span>
+  <input class="custom-input" type="number" id="customMin" min="1" max="60" placeholder="min" />
+  <button class="custom-set" onclick="setCustom()">SET</button>
+</div>
+
+<!-- STATUS -->
+<div class="status-bar">
+  <div class="status-item">
+    <div class="status-dot" id="dotWarn"></div>
+    <span>30s warn</span>
+  </div>
+  <div class="status-item">
+    <div class="status-dot" id="dotVibe"></div>
+    <span>vibration</span>
+  </div>
+  <div class="status-item">
+    <div class="status-dot" id="dotWake"></div>
+    <span>screen on</span>
+  </div>
+</div>
+
+<script>
+// ── STATE ──
+let totalSecs    = 120;
+let remainSecs   = 120;
+let running      = false;
+let interval     = null;
+let rounds       = 1;
+let wakeLock     = null;
+let warnFired    = false;
+const WARN_AT    = 30; // seconds remaining to trigger warning sound
+const CIRCUMF    = 339.29;
+
+const ring       = document.getElementById('ringWrap');
+const ringSvg    = document.getElementById('ringSvg');
+const prog       = document.getElementById('ringProgress');
+const disp       = document.getElementById('timeDisplay');
+const mainBtn    = document.getElementById('mainBtn');
+const flashEl    = document.getElementById('flashOverlay');
+const dotWarn    = document.getElementById('dotWarn');
+const dotVibe    = document.getElementById('dotVibe');
+const dotWake    = document.getElementById('dotWake');
+const roundNum   = document.getElementById('roundNum');
+
+dotWarn.classList.add('on');
+
+// Check vibration support
+if (navigator.vibrate) dotVibe.classList.add('on');
+
+// ── AUDIO (Web Audio API — no external files) ──
+const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+function beep(freq, dur, type = 'sine', vol = 0.5, delay = 0) {
+  const osc  = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+  gain.gain.setValueAtTime(0, ctx.currentTime + delay);
+  gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + delay + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
+  osc.start(ctx.currentTime + delay);
+  osc.stop(ctx.currentTime + delay + dur + 0.05);
+}
+
+function playWarn() {
+  // two soft mid tones
+  beep(660, 0.18, 'sine', 0.35, 0);
+  beep(660, 0.18, 'sine', 0.35, 0.28);
+}
+
+function playDone() {
+  // triumphant three-tone chime
+  beep(523, 0.22, 'sine', 0.5, 0);
+  beep(659, 0.22, 'sine', 0.5, 0.22);
+  beep(784, 0.45, 'sine', 0.55, 0.44);
+}
+
+function resumeAudio() {
+  if (ctx.state === 'suspended') ctx.resume();
+}
+
+// ── DISPLAY ──
+function fmt(s) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${m}:${String(sec).padStart(2,'0')}`;
+}
+
+function updateDisplay() {
+  disp.textContent = fmt(remainSecs);
+  const pct = remainSecs / totalSecs;
+  prog.style.strokeDashoffset = CIRCUMF * (1 - pct);
+
+  const isWarn = remainSecs <= WARN_AT && remainSecs > 0;
+  ringSvg.classList.toggle('ring-warn', isWarn);
+  disp.classList.toggle('done', remainSecs === 0);
+}
+
+// ── PRESET BUTTONS ──
+function setPreset(secs) {
+  if (running) return;
+  totalSecs  = secs;
+  remainSecs = secs;
+  warnFired  = false;
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  updateDisplay();
+}
+
+function setCustom() {
+  const val = parseInt(document.getElementById('customMin').value);
+  if (isNaN(val) || val < 1) return;
+  if (running) return;
+  totalSecs  = val * 60;
+  remainSecs = val * 60;
+  warnFired  = false;
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  updateDisplay();
+}
+
+// ── ADJUST ──
+function adjustTime(delta) {
+  resumeAudio();
+  const newVal = Math.max(10, remainSecs + delta);
+  if (!running) {
+    totalSecs = newVal;
+  }
+  remainSecs = newVal;
+  if (remainSecs > totalSecs) totalSecs = remainSecs;
+  warnFired = remainSecs <= WARN_AT;
+  updateDisplay();
+}
+
+// ── TIMER ──
+function toggleTimer() {
+  resumeAudio();
+  if (running) {
+    pause();
+  } else {
+    start();
+  }
+}
+
+function start() {
+  if (remainSecs <= 0) resetTimer();
+  running = true;
+  mainBtn.textContent = 'PAUSE';
+  acquireWakeLock();
+  interval = setInterval(tick, 1000);
+}
+
+function pause() {
+  running = false;
+  mainBtn.textContent = 'RESUME';
+  clearInterval(interval);
+  releaseWakeLock();
+}
+
+function resetTimer() {
+  clearInterval(interval);
+  running    = false;
+  remainSecs = totalSecs;
+  warnFired  = false;
+  mainBtn.textContent = 'START';
+  disp.classList.remove('done');
+  ringSvg.classList.remove('ring-warn');
+  updateDisplay();
+  releaseWakeLock();
+}
+
+function tick() {
+  if (remainSecs <= 0) {
+    onDone();
+    return;
+  }
+  remainSecs--;
+
+  // 30s warning
+  if (remainSecs === WARN_AT && !warnFired) {
+    warnFired = true;
+    playWarn();
+  }
+
+  if (remainSecs === 0) {
+    onDone();
+  } else {
+    updateDisplay();
+  }
+}
+
+function onDone() {
+  clearInterval(interval);
+  running = false;
+  remainSecs = 0;
+  updateDisplay();
+  playDone();
+  vibrate([200, 100, 200, 100, 400]);
+  flashScreen();
+  rounds++;
+  roundNum.textContent = rounds;
+  mainBtn.textContent = 'START';
+  releaseWakeLock();
+  // auto-prepare for next set
+  setTimeout(() => {
+    remainSecs = totalSecs;
+    warnFired  = false;
+    updateDisplay();
+  }, 1800);
+}
+
+function flashScreen() {
+  flashEl.classList.remove('flash');
+  void flashEl.offsetWidth;
+  flashEl.classList.add('flash');
+}
+
+// ── VIBRATION ──
+function vibrate(pattern) {
+  if (navigator.vibrate) navigator.vibrate(pattern);
+}
+
+// ── WAKE LOCK ──
+async function acquireWakeLock() {
+  if (!('wakeLock' in navigator)) return;
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+    dotWake.classList.add('on');
+    wakeLock.addEventListener('release', () => dotWake.classList.remove('on'));
+  } catch(e) {}
+}
+
+function releaseWakeLock() {
+  if (wakeLock) {
+    wakeLock.release();
+    wakeLock = null;
+    dotWake.classList.remove('on');
+  }
+}
+
+// Re-acquire wake lock when tab becomes visible again
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && running) acquireWakeLock();
+});
+
+// ── KEYBOARD SHORTCUTS ──
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space') { e.preventDefault(); toggleTimer(); }
+  if (e.code === 'KeyR') resetTimer();
+});
+
+// ── INIT ──
+updateDisplay();
+</script>
+</body>
+</html>
