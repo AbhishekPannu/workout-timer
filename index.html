@@ -70,13 +70,13 @@
   /* ── PRESETS ── */
   .presets {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     margin: 28px 0 0;
     flex-wrap: wrap;
     justify-content: center;
     position: relative;
     z-index: 1;
-    padding: 0 20px;
+    padding: 0 16px;
   }
 
   .preset-btn {
@@ -86,10 +86,11 @@
     font-family: 'Bebas Neue', sans-serif;
     font-size: 1.05rem;
     letter-spacing: 0.1em;
-    padding: 8px 18px;
+    padding: 8px 14px;
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.15s ease;
+    text-align: center;
   }
 
   .preset-btn:hover, .preset-btn.active {
@@ -202,8 +203,6 @@
     margin-top: 4px;
   }
 
-
-
   /* ── CONTROLS ── */
   .controls {
     display: flex;
@@ -308,6 +307,8 @@
 
 <!-- PRESETS -->
 <div class="presets">
+  <button class="preset-btn" onclick="setPreset(30, this)">0:30<br><span style="font-size:0.55rem;font-family:'DM Mono';letter-spacing:0.1em;color:inherit">QUICK</span></button>
+  <button class="preset-btn" onclick="setPreset(60, this)">1:00<br><span style="font-size:0.55rem;font-family:'DM Mono';letter-spacing:0.1em;color:inherit">CIRCUIT</span></button>
   <button class="preset-btn" onclick="setPreset(90, this)">1:30<br><span style="font-size:0.55rem;font-family:'DM Mono';letter-spacing:0.1em;color:inherit">CARDIO</span></button>
   <button class="preset-btn active" onclick="setPreset(120, this)">2:00<br><span style="font-size:0.55rem;font-family:'DM Mono';letter-spacing:0.1em;color:inherit">HYPERTROPHY</span></button>
   <button class="preset-btn" onclick="setPreset(180, this)">3:00<br><span style="font-size:0.55rem;font-family:'DM Mono';letter-spacing:0.1em;color:inherit">STRENGTH</span></button>
@@ -346,8 +347,6 @@
   <button class="btn-reset" onclick="resetTimer()">RESET</button>
 </div>
 
-
-
 <script>
 // ── STATE ──
 let totalSecs  = 120;
@@ -366,7 +365,6 @@ const disp     = document.getElementById('timeDisplay');
 const mainBtn  = document.getElementById('mainBtn');
 const flashEl  = document.getElementById('flashOverlay');
 const roundNum = document.getElementById('roundNum');
-
 
 // ── AUDIO ──
 const actx = new (window.AudioContext || window.webkitAudioContext)();
@@ -391,7 +389,7 @@ function playWarn() {
 
 function playDone() {
   beep(600, 0.15, 'square', 0.55, 0.0);
-  beep(600,  0.15, 'square', 0.55, 0.18);
+  beep(600, 0.15, 'square', 0.55, 0.18);
   beep(600, 0.35, 'square', 0.7,  0.36);
 }
 
@@ -514,7 +512,7 @@ async function acquireWakeLock() {
   if (!('wakeLock' in navigator)) return;
   try {
     wakeLock = await navigator.wakeLock.request('screen');
-      } catch(e) {}
+  } catch(e) {}
 }
 
 function releaseWakeLock() {
@@ -524,8 +522,6 @@ function releaseWakeLock() {
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && running) acquireWakeLock();
 });
-
-
 
 document.addEventListener('keydown', e => {
   if (e.code === 'Space') { e.preventDefault(); toggleTimer(); }
